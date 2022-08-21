@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView, Alert} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView, Alert, Platform} from 'react-native';
 import { theme } from './colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Fontisto } from '@expo/vector-icons'
@@ -47,20 +47,28 @@ export default function App() {
   // console.log(toDos);
 
   const deleteToDo = (key) => {
-    Alert.alert(
-      "Delete To Do?", 
-      "Are you sure?", [
-        {text: "Cancel"},
-        {
-          text: "I'm Sure", 
-          onPress: async () => {
-            const newToDos = {...toDos};
-            delete newToDos[key];
-            setToDos(newToDos);
-            await saveToDos(newToDos);
+    if (Platform.OS === "web") {
+      const ok = confirm("Do you want to delete this To Do?")
+      if (ok) {
+        const newToDos = {...toDos};
+        delete newToDos[key];
+        setToDos(newToDos);
+        saveToDos(newToDos);
+      }
+    } else {
+      Alert.alert("Delete To Do?", "Are you sure?", [
+          {text: "Cancel", style: "cancel"},
+          {
+            text: "I'm Sure", style: "destructive",
+            onPress: () => {
+              const newToDos = {...toDos};
+              delete newToDos[key];
+              setToDos(newToDos);
+              saveToDos(newToDos);
+            },
           },
-        },
-      ])
+        ])
+      }
     };
     
   return (
@@ -68,10 +76,10 @@ export default function App() {
       <StatusBar style="auto" />
       <View style={styles.header}>
         <TouchableOpacity onPress={work}>
-          <Text style={{...styles.btnTxt, color: working? "white" : theme.grey}}>Work</Text>
+          <Text style={{fontSize: 40, fontWeight: "600", color: working? "white" : theme.grey}}>Work</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={travel}>
-          <Text style={{...styles.btnTxt, color: !working? "white" : theme.grey}}>Travel</Text>
+          <Text style={{fontSize: 40, fontWeight: "600", color: !working? "white" : theme.grey}}>Travel</Text>
         </TouchableOpacity>
       </View>
 
@@ -115,8 +123,7 @@ const styles = StyleSheet.create({
     marginTop: 100
   },
   btnTxt: {
-    fontSize: 40, 
-    fontWeight: "600",
+    
   },
   input: {
     backgroundColor: "white",
